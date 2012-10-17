@@ -17,6 +17,8 @@ class TestdroidCloudRemote
 		@conn = Stomp::Connection.open @username, @password, @url, @port, false 
 	end
 	def close
+		sendCommand("END");
+		sleep 5
 		@conn.disconnect
 	end
 	def waitForConnection(queueName)
@@ -41,8 +43,17 @@ class TestdroidCloudRemote
 	def display  
 		puts "Device(#{@deviceId}) is connected: #{@deviceConnected} reply queue: #{@cmdDestination} "  
 	end  
-	def touch 
+	def touch(x,y) 
 		return if !checkConn
+		sendCommand("TOUCH #{x}, #{y}");
+	end
+	def drag(startx,starty,endx,endy,steps = 10, duration=500) 
+		return if !checkConn
+		sendCommand("DRAG #{startx}, #{starty}, #{endx}, #{endy}, #{steps}, #{duration}");
+	end
+	def reboot
+		return if !checkConn
+		sendCommand("REBOOT");
 	end
 	def checkConn
 		if @deviceId.nil? 
@@ -65,15 +76,23 @@ remote = TestdroidCloudRemote.new('','', 'localhost', 61613)
 remote.open
 remote.waitForConnection('DEVICEID.MONKEY.REMOTE')
 remote.display
-puts "Done"
-#Start sending commands
-STDIN.each_line { |line| 
-	puts "Publish:"+line
-	command = line.strip
-	remote.sendCommand( command )
-	if command =~ /^END\w*/
-		break
-	end
-}
+remote.touch(22,34)
+sleep 5
+remote.drag(22,134, 323,133)
+sleep 5
+remote.drag(240,134, 1,134, 9, 200)
+#remote.reboot
 remote.close
+
+#puts "Done"
+#Start sending commands
+#STDIN.each_line { |line| 
+#	puts "Publish:"+line
+#	command = line.strip
+#	remote.sendCommand( command )
+#	if command =~ /^END\w*/
+#		break
+#	end
+#}
+#remote.close
 puts "End"
