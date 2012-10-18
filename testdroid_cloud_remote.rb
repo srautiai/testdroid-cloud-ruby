@@ -14,7 +14,7 @@ class TestdroidCloudRemote
 	end  
 	def open
 		puts "Connecting #{@url}:#{@port}"
-		@conn = Stomp::Connection.open @username, @password, @url, @port, false 
+		@conn = Stomp::Connection.open @username, @password, @url, @port, true 
 	end
 	def close
 		sendCommand("END");
@@ -68,6 +68,9 @@ class TestdroidCloudRemote
 	end
 	def sendCommand(monkeyCommand)
 		@conn.publish @cmdDestination, monkeyCommand ,{'persistent'=>'false', 'amq-msg-type'=>'text'}
+	end
+	def listenConnection
+		@conn.receive
 	end
 end  
 
